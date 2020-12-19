@@ -9,20 +9,9 @@ day = 15
 import re as re
 import numpy as np
 
-# def open_input(day):
-#     with open("{}.txt".format(day), "r") as rows:
-#         input = [row.rstrip("\n") for row in rows]
-#         # input_lists = np.array([list(row) for row in input])
-#     return input
-
-# def open_sample(day):
-#     with open("{}_test.txt".format(day), "r") as rows:
-#         input = [row.rstrip("\n") for row in rows]
-#         # input_lists = np.array([list(row) for row in input])
-#     return input
-
 ### TOGGLE
 inp = np.array([2,20,0,4,1,17])
+# Testing inputs
 # inp = np.array([0, 3, 6])
 # inp = np.array([1, 3, 2])
 # inp = np.array([2, 1, 3])

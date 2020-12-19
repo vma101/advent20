@@ -64,7 +64,6 @@ def task1(inp):
     return sum(mem_dict.values())
 
 
-
 def oneMem(mask_val, row, mem_dict):
     # print('called on:', row)
     # mask_one = mask_val.replace('X', '1') # both X, 1 = 1; used with & / AND
