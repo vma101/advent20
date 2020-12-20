@@ -58,7 +58,6 @@ def processInp(inp, part2 = False):
     '''
     tileStart = 0
     tileDict = {}
-    # tileSide = {}
     sideDict = {}
     if not part2:
         for row in range(len(inp)):
@@ -79,7 +78,7 @@ def processInp(inp, part2 = False):
             for side in tileDict[name]:
                 sideKey = side.tobytes()
                 if sideKey not in sideDict.keys():
-                    sideDict[sideKey] = 0
+                    sideDict[sideKey] = 1
                 elif sideKey in sideDict.keys():
                     sideDict[sideKey] += 1
 
@@ -88,7 +87,7 @@ def processInp(inp, part2 = False):
             for side in flipSides:
                 sideKey = side.tobytes()
                 if sideKey not in sideDict.keys():
-                    sideDict[sideKey] = 0
+                    sideDict[sideKey] = 1
                 elif sideKey in sideDict.keys():
                     sideDict[sideKey] += 1
                 
@@ -99,7 +98,7 @@ def processInp(inp, part2 = False):
     #             name = re.match('Tile ([0-9]+):', tile[0]).group(1)
     #             tileDict[name] = Tile(name, tile[1:])
     #             tileStart = row + 1
-    # return tileDict, sideDict
+    return tileDict, sideDict
 
 # def oneTile(tile, tileDict, tileMatch):
 #     matches = []
@@ -119,18 +118,19 @@ def processInp(inp, part2 = False):
 
 def task(inp, part2 = False):
     tileDict, sideDict = processInp(inp)
-    oriList = [[0, 1, 2, 3], [0, 1, 6, 7], [2, 3, 4, 5]]
-    tileMatch = {}
-    for tile, sides in tileDict.items():
-        tileMatch[tile] = [sideDict[side.tobytes()] for side in sides]
-        # tileMatch[tile] = sum([1 if x == 1 else 0 for x in tileMatch[tile]])
-    
     # within each value list, three possible orientations of the tile are possible
         # normal = [0:4]
         # flipped up/down = [0, 1, 6, 7] as LR would be flipped
         # flipped left/right = [2, 3, 4, 5] as UD would be flipped
 
         # get the MAXIMUM of matches for these orientations
+    # oriList = [[0, 1, 2, 3], [0, 1, 6, 7], [2, 3, 4, 5]]
+    tileMatch = {}
+    for tile, sides in tileDict.items():
+        tileMatch[tile] = [sideDict[side.tobytes()] for side in sides]
+        # tileMatch[tile] = sum([1 if x == 1 else 0 for x in tileMatch[tile]])
+    
+    
         # tileMatch[tile] = max([tileMatch[tile][ori].sum() for ori in oriList])
 
     
