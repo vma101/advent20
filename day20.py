@@ -127,10 +127,9 @@ def task(inp, part2 = False):
     # oriList = [[0, 1, 2, 3], [0, 1, 6, 7], [2, 3, 4, 5]]
     tileMatch = {}
     for tile, sides in tileDict.items():
-        tileMatch[tile] = [sideDict[side.tobytes()] for side in sides]
+        tileMatch[tile] = sum([sideDict[side.tobytes()] for side in sides])
+        # tileMatch[tile] = sum(tileMatch[tile])
         # tileMatch[tile] = sum([1 if x == 1 else 0 for x in tileMatch[tile]])
-    
-    
         # tileMatch[tile] = max([tileMatch[tile][ori].sum() for ori in oriList])
 
     
