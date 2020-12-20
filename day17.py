@@ -46,7 +46,7 @@ def adjSet(dim = 3):
     if dim == 3:
         for z in zAdj: 
             for xy in xyAdj: 
-                adjIncr.append(tuple([xy[0], xy[1], z, w]))
+                adjIncr.append(tuple([xy[0], xy[1], z]))
                 # print('neighbor block', adjIncr)
 
     elif dim == 4:
