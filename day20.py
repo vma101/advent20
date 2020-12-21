@@ -16,15 +16,14 @@ def open_input(day):
     return inp
 
 def open_sample(day):
-    with open("{}_test2.txt".format(day), "r") as rows:
+    with open("{}_test.txt".format(day), "r") as rows:
         inp = [row.rstrip("\n") for row in rows]
         # input_lists = np.array([list(row) for row in input])
     return inp
 
 ### TOGGLE
-# inp = open_input(day)
-inp = open_sample(day)
-# print(inp)
+inp = open_input(day)
+# inp = open_sample(day)
 
 class Tile:
     def __init__(self, name, tile):
@@ -162,12 +161,13 @@ def arrTiles(cornerTile, tileDict, tileMatch, dim):
         # first figure out the ORIENTATION, then figure out the ROTATION allowing it to be topleft
     oriList = [[0, 1, 2, 3], [1, 0, 6, 7], [4, 5, 3, 2]]
     cornerMatches = np.array(tileMatch[cornerTile])
+    # cTile = tileDict[cTile]
     rotCount = 4
     cornerMatch = False
 
     for i in range(len(oriList)):
         oriMatches = np.array(cornerMatches[oriList[i]])
-        # want the 2s (i.e. the matches) to be on the RIGHT, DOWN (i.e. index 0, 3 of oriList)
+        # want the 2s (i.e. the matches) to be on the RIGHT, DOWN (i.e. index 1, 3 of oriList)
         if i == 0:
             while rotCount > 0:
                 if [j for j in range(len(oriMatches)) if oriMatches[j] == 2] == [1, 3]:
@@ -186,7 +186,7 @@ def arrTiles(cornerTile, tileDict, tileMatch, dim):
             elif cornerMatch == True:
                 break
         elif i == 1:
-            tileDict[cornerTile].flipud()
+            tileDict[cornerTile] = tileDict[cornerTile].flipud()
             rotCount = 4
             while rotCount > 0:
                 if [j for j in range(len(oriMatches)) if oriMatches[j] == 2] == [1, 3]:
@@ -225,58 +225,48 @@ def arrTiles(cornerTile, tileDict, tileMatch, dim):
             elif cornerMatch == True:
                 break
     
-    tileArr[0, 0] = str(cornerTile)
+    # after finding the corner tile, set it at the top-left corner of the array
+    tileArr[0, 0] = tileDict[cornerTile]
 
     # at this point, the x, y = (0, 0) is already set, 
     for row in range(0, dim):
         for col in range(0, dim):
-            # start with top row
-            # print('called on', row, col)
-            # print(tileArr)
-
             # case: first row, not first column
             if row == 0 and col != 0:
-                rTile = tileArr[row, col - 1]
-                tile = tileDict[rTile]
+                tile = tileArr[row, col - 1]
                 for tileName in tilesAll:
                     otherTile = tileDict[tileName]
                     match, otherTile = oneTilePair(tile, 'r', otherTile)
                     if match:
-                        tileDict[tileName] = otherTile
-                        tileArr[row, col] = tileName
+                        tileArr[row, col] = otherTile
                         tilesAll.remove(tileName)
-                        tile = tileDict[tileName]
                         break
 
             # case: not first row, but first column
             elif row != 0 and col == 0:
-                dTile = tileArr[row - 1, col]
-                tile = tileDict[dTile]
+                tile = tileArr[row - 1, col]
                 for tileName in tilesAll:
                     otherTile = tileDict[tileName]
                     match, otherTile = oneTilePair(tile, 'd', otherTile)
                     if match:
-                        tileDict[tileName] = otherTile
-                        tileArr[row, col] = tileName
+                        tileArr[row, col] = otherTile
                         tilesAll.remove(tileName)
-                        tile = tileDict[tileName]
+
                         break
             
             # case: not first row, not first column
             elif row != 0 and col != 0:
                 matchR = False
-                rTile = tileDict[tileArr[row, col - 1]]
+                rTile = tileArr[row, col - 1]
                 matchD = False
-                dTile = tileDict[tileArr[row - 1, col]]
+                dTile = tileArr[row - 1, col]
                 for tileName in tilesAll:
                     otherTile = tileDict[tileName]
                     matchR, otherTile = oneTilePair(rTile, 'r', otherTile)
                     matchD, otherTile = oneTilePair(dTile, 'd', otherTile)
                     if matchR and matchD:
-                        tileDict[tileName] = otherTile
-                        tileArr[row, col] = tileName
+                        tileArr[row, col] = otherTile
                         tilesAll.remove(tileName)
-                        tile = tileDict[tileName]
                         break
     return tileArr
 
@@ -304,10 +294,10 @@ def oneTilePair(tile, matchSide, otherTile):
             if all(tileSide == otherTile.getSide(side)):
                 match = True
                 break
-            otherTile.rot90()
+            otherTile = otherTile.rot90()
             rotCount -= 1
         if match == False:
-            otherTile.rot90()
+            otherTile = otherTile.rot90()
         return match, otherTile
 
     # try all rotations
@@ -325,23 +315,21 @@ def oneTilePair(tile, matchSide, otherTile):
 
     return match, otherTile
 
-def stitchTiles(tilesArr, tileDict):
+def stitchTiles(tilesArr):
     dim = tilesArr.shape[0]
     # stitchedGrid
     for row in range(dim):
         for col in range(dim):
-            tileName = tilesArr[row, col]
-            tile = tileDict[tileName]
+            tile = tilesArr[row, col]
             if col == 0:
                 tilesCol = tile.grid[1:-1, 1:-1]
             elif 0 < col < dim:
-                tilesCol = np.concatenate((tilesCol, tile.grid[1: -1, 1: -1]), axis = 0)
+                tilesCol = np.concatenate((tilesCol, tile.grid[1: -1, 1: -1]), axis = 1)
             if col == dim - 1:
                 if row == 0:
                     stitched = tilesCol
                 elif row > 0:
-                    stitched = np.concatenate((stitched, tilesCol), axis = 1)
-    # print(stitched)
+                    stitched = np.concatenate((stitched, tilesCol), axis = 0)
     return stitched
 
 coords = np.array([
@@ -359,11 +347,9 @@ def findMonsters(coords, stitched):
     for row in range(1, stitched.shape[0] - 1):
         for col in range(stitched.shape[1] - 20):
             if stitched[row, col] == 1:
-                # print(row, col)
                 monster = oneMonster((row, col), stitched)
                 if monster:
                     count += 1
-    # print(count)
     return count
 
 def oneMonster(loc, stitched):
@@ -372,7 +358,6 @@ def oneMonster(loc, stitched):
         adjLoc = np.array(loc) + np.array(adj)
 
         if stitched[adjLoc[0], adjLoc[1]] != 1:
-            # print(adjLoc)
             monster = False
             break
     return monster
@@ -380,31 +365,30 @@ def oneMonster(loc, stitched):
 def task2(coords, stitched):
     stitchedAll = sum(sum(stitched))
     count = 0
-
+    
     # case: just rotation
     if count == 0:
-        def rotCount(coords, stitched):
+        def rotFind(coords, stitched):
             rotCount = 4
             count = 0
-            while rotCount > 0:
-                # print("rotated")
+            while rotCount >= 0 and count == 0:
                 stitchedRot = np.rot90(stitched)
                 count = findMonsters(coords, stitchedRot)
                 if count > 0:
                     return count
                 rotCount -= 1
             return count
-        count = rotCount(coords, stitched)
+        count = rotFind(coords, stitched)
 
+    # case: flip up/down, rotate again
     if count == 0:
-        # print("flipud")
         stitchedud = np.flipud(stitched)
-        count = rotCount(coords, stitchedud)
+        count = rotFind(coords, stitchedud)
 
+    # case: flip left/right, rotate again
     if count == 0:
-        # print("fliplr")
         stitchedlr = np.fliplr(stitched)
-        count = rotCount(coords, stitchedlr)
+        count = rotFind(coords, stitchedlr)
     return count, stitchedAll - count * (len(coords) + 1)
 
 # Task Calls
@@ -413,9 +397,9 @@ def task2(coords, stitched):
 # print(task1(inp))
 
 ## Task 2
-# corners, _, tileMatch = task1(inp)
-# _, _, tileDict = processInp(inp)
-# tilesArr = arrTiles(corners[0], tileDict, tileMatch, 3)
-# stitched = stitchTiles(tilesArr, tileDict)
-# print(task2(coords, stitched))
+corners, _, tileMatch = task1(inp)
+_, _, tileDict = processInp(inp)
+tilesArr = arrTiles(corners[0], tileDict, tileMatch, 12)
+stitched = stitchTiles(tilesArr)
+print(task2(coords, stitched))
 
