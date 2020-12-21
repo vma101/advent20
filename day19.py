@@ -23,7 +23,7 @@ def open_sample(day):
     return inp
 
 ### TOGGLE
-inp = open_input(day)
+# inp = open_input(day)
 # inp = open_sample(day)
 # print(inp)
 
