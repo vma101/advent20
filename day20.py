@@ -26,6 +26,9 @@ inp = open_input(day)
 # inp = open_sample(day)
 
 class Tile:
+    '''
+    Tile class to represent a tile (a list of lists of "." and "#")
+    '''
     def __init__(self, name, tile):
         self.name = name
         self.grid = np.array([[1 if loc == '#' else 0 for loc in row] for row in tile])
@@ -83,6 +86,8 @@ def processInp(inp):
     tileSideDict = {}
     sideDict = {}
     tileDict = {}
+
+    # create the tile Dictionaries
     
     for row in range(len(inp)):
         if inp[row] == '':
@@ -99,6 +104,8 @@ def processInp(inp):
             tileObj = Tile(name, tile[1:])
             tileDict[name] = tileObj
             tileSideDict[name] = tileObj.getSides()
+
+    # create the side Dictionary
     
     for name in tileSideDict.keys():
         for side in tileSideDict[name]:
@@ -161,72 +168,67 @@ def arrTiles(cornerTile, tileDict, tileMatch, dim):
         # first figure out the ORIENTATION, then figure out the ROTATION allowing it to be topleft
     oriList = [[0, 1, 2, 3], [1, 0, 6, 7], [4, 5, 3, 2]]
     cornerMatches = np.array(tileMatch[cornerTile])
-    # cTile = tileDict[cTile]
-    rotCount = 4
-    cornerMatch = False
+    cTile = tileDict[cTile]
 
     for i in range(len(oriList)):
         oriMatches = np.array(cornerMatches[oriList[i]])
-        # want the 2s (i.e. the matches) to be on the RIGHT, DOWN (i.e. index 1, 3 of oriList)
+        
+        # case: normal orientation
         if i == 0:
-            while rotCount > 0:
-                if [j for j in range(len(oriMatches)) if oriMatches[j] == 2] == [1, 3]:
-                    cornerMatch = True
-                    break
-                else:
-                    tileDict[cornerTile].rot90()
-                    # top becomes left 0 --> 2
-                    # bottom becomes right 1 --> 3
-                    # left becomes bottom 2 --> 1
-                    # right becomes top 3 --> 0
-                    oriMatches = [oriMatches[3], oriMatches[2], oriMatches[0], oriMatches[1]]
-                    rotCount -= 1
-            if cornerMatch == False:
-                tileDict[cornerTile].rot90()
-            elif cornerMatch == True:
+
+            def rotArr(oriMatches, cTile):
+                rotCount = 4
+                cornerMatch = False
+                while rotCount > 0:
+                    # want the 2s (i.e. the matches) to be on the RIGHT, DOWN (i.e. index 1, 3 of oriList)
+                    if [j for j in range(len(oriMatches)) if oriMatches[j] == 2] == [1, 3]:
+                        cornerMatch = True
+                        return cornerMatch
+                    else:
+                        cTile = cTile.rot90()
+                        # top becomes left 0 --> 2
+                        # bottom becomes right 1 --> 3
+                        # left becomes bottom 2 --> 1
+                        # right becomes top 3 --> 0
+                        oriRot = {
+                            0: 2,
+                            1: 3,
+                            2: 1,
+                            3: 0
+                        }
+                        oriMatches = [oriMatches[oriRot[i]] for i in range(len(oriMatches))]
+                        rotCount -= 1
+                if not cornerMatch:
+                    cTile = cTile.rot90()
+                return cornerMatch, cTile
+            
+            
+            cornerMatch, cTile = rotArr(oriMatches, cornerTile)
+            if cornerMatch:
                 break
+
+        # case: flip up/down
         elif i == 1:
-            tileDict[cornerTile] = tileDict[cornerTile].flipud()
-            rotCount = 4
-            while rotCount > 0:
-                if [j for j in range(len(oriMatches)) if oriMatches[j] == 2] == [1, 3]:
-                    cornerMatch = True
-                    break
-                else:
-                    tileDict[cornerTile].rot90()
-                    # top becomes left 0 --> 2
-                    # bottom becomes right 1 --> 3
-                    # left becomes bottom 2 --> 1
-                    # right becomes top 3 --> 0
-                    oriMatches = [oriMatches[3], oriMatches[2], oriMatches[0], oriMatches[1]]
-                    rotCount -= 1
-            if cornerMatch == False:
-                tileDict[cornerTile].rot90()
-                tileDict[cornerTile].flipud()
-            elif cornerMatch == True:
+            cTile = cTile.flipud()
+            cornerMatch, cTile = rotArr(oriMatches, cornerTile)
+            
+            if not cornerMatch:
+                cTile = cTile.flipud()
+            elif cornerMatch:
                 break
+            
+        # case: flip left/right
         elif i == 2:
-            tileDict[cornerTile].fliplr()
-            rotCount = 4
-            while rotCount > 0:
-                if [j for j in range(len(oriMatches)) if oriMatches[j] == 2] == [1, 3]:
-                    cornerMatch = True
-                    break
-                else:
-                    tileDict[cornerTile].rot90()
-                    # top becomes left 0 --> 2
-                    # bottom becomes right 1 --> 3
-                    # left becomes bottom 2 --> 1
-                    # right becomes top 3 --> 0
-                    oriMatches = [oriMatches[3], oriMatches[2], oriMatches[0], oriMatches[1]]
-                    rotCount -= 1
-            if cornerMatch == False:
-                tileDict[cornerTile].rot90()
-            elif cornerMatch == True:
+            cTile = cTile.fliplr()
+            cornerMatch, cTile = rotArr(oriMatches, cornerTile)
+            
+            if not cornerMatch:
+                cTile = cTile.fliplr()
+            elif cornerMatch:
                 break
     
     # after finding the corner tile, set it at the top-left corner of the array
-    tileArr[0, 0] = tileDict[cornerTile]
+    tileArr[0, 0] = cTile
 
     # at this point, the x, y = (0, 0) is already set, 
     for row in range(0, dim):
@@ -316,6 +318,11 @@ def oneTilePair(tile, matchSide, otherTile):
     return match, otherTile
 
 def stitchTiles(tilesArr):
+    '''
+    Given an array of tile objects, stitch together after removing borders
+
+    Return: an array of arrays of the stitched 'image'
+    '''
     dim = tilesArr.shape[0]
     # stitchedGrid
     for row in range(dim):
@@ -342,17 +349,27 @@ coords = np.array([
 ])
 
 def findMonsters(coords, stitched):
+    '''
+    Given the relative coordinates of a monster, and a stitched pattern
+
+    Return: number of monsters
+    '''
     # start with row 1, max out at len - 20
     count = 0
     for row in range(1, stitched.shape[0] - 1):
         for col in range(stitched.shape[1] - 20):
             if stitched[row, col] == 1:
-                monster = oneMonster((row, col), stitched)
+                monster = oneMonster((row, col), coords, stitched)
                 if monster:
                     count += 1
     return count
 
-def oneMonster(loc, stitched):
+def oneMonster(loc, coords, stitched):
+    '''
+    Given a potential starting point for a monster, relative coordinates, and the stitched image
+
+    Return: bool monster exists or not
+    '''
     monster = True
     for adj in coords:
         adjLoc = np.array(loc) + np.array(adj)
@@ -363,6 +380,11 @@ def oneMonster(loc, stitched):
     return monster
 
 def task2(coords, stitched):
+    '''
+    Given relative coordinates of a monster, and a stitched pattern
+
+    Return: number of hashes in the image minus hashes in the monsters
+    '''
     stitchedAll = sum(sum(stitched))
     count = 0
     
