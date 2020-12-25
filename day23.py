@@ -9,21 +9,9 @@ import re as re
 import numpy as np
 import bisect
 
-# def open_input(day):
-#     with open("{}.txt".format(day), "r") as rows:
-#         inp = [row.rstrip("\n") for row in rows]
-#         # input_lists = np.array([list(row) for row in input])
-#     return inp
-
-# def open_sample(day):
-#     with open("{}_test.txt".format(day), "r") as rows:
-#         inp = [row.rstrip("\n") for row in rows]
-#         # input_lists = np.array([list(row) for row in input])
-#     return inp
-
 ### TOGGLE
-# inp = [int(num) for num in '219347865']
-inp = [int(num) for num in '389125467']
+inp = [int(num) for num in '219347865']
+# inp = [int(num) for num in '389125467']
 
 ## List Implementation - Unideal, very slow
 
@@ -109,13 +97,17 @@ def task2(inp, moves = 1000000):
     return np.prod(twoCups)
 
 ## Linked List Implementation
-
-class Node:
-    def __init__(self, val):
-        self.v = val
-        self.next = None
-
 class LinkedList:
+    '''
+    Linked list class and functions:
+
+    1) Create the master linked list object
+    2) Create a dictionary of node values pointing to nodes, each node is really a linked list object
+    3) Pick up 3 cups clockwise of current node, return the list and corr values
+    4) Insert the 3 cups clockwise of the destination node
+    5) Print the string of all nodes following given node
+    '''
+
     def __init__(self, val):
         self.v = val
         self.next = self
@@ -179,11 +171,20 @@ class LinkedList:
 
             if cur == head:
                 break
-        return ','.join(valList)
+        return ''.join(valList)
 
 def crabCups(inp, moves = 10000000, task2 = True):
+    '''
+    Play the game given the input cups, number of moves to run.
+    If task1: take input as is
+    If task2: append ascending cups of 10 - 1mil after existing input
+
+    Return: 
+    If task1: string of cups after 1
+    If task2: product of the labels on the 2 cups after label 1
+    '''
     if task2:
-        inp += [num for num in range(max(inp) + 1, 10000000 + 1)]
+        inp += [num for num in range(max(inp) + 1, 1000001)]
     
     origCups = LinkedList.createList(inp)
     cups = origCups
@@ -192,6 +193,7 @@ def crabCups(inp, moves = 10000000, task2 = True):
 
     while moves > 0:
         # get value of current cup
+        
         currCup = cups.v
 
         # remove 3 cups next to current cup
@@ -204,12 +206,11 @@ def crabCups(inp, moves = 10000000, task2 = True):
             if destCup < minCup:
                 destCup = maxCup
 
-        print(currCup, pickUpCups, destCup)
+        # if moves % 100000 == 0:
+        #     print(currCup, pickUpCups, destCup)
         
         # insert 3 cups next to the destination cup
         cupDict[destCup].insertCups(pickUpHead)
-
-        # print('pointing to', cupDict[1].next.v, 'ans', cupDict[1].next.v * cupDict[1].next.next.v)
         cups = cups.next
         moves -= 1
 
@@ -217,12 +218,19 @@ def crabCups(inp, moves = 10000000, task2 = True):
         oneCup = cupDict[1]
         twoCups = [oneCup.next.v, oneCup.next.next.v]
         print(twoCups)
+        print(cupDict[934001].next.v)
         # print(cups.to_str())
         return np.prod(twoCups)
 
     else:
-        return cups.to_str()
+        return cupDict[1].next.to_str()[:-1]
 
+# Task Calls
+
+## First 2 rely on a non-linked list, no dictionary method, not advised!
 # print(task1(inp))
 # print(task2(inp))
+
+## Uses a linked list!
+print(crabCups(inp, 100, False))
 print(crabCups(inp))
